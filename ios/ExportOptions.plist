@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.parknjet.dispatch</key>
+        <string>pnjapp</string>
+    </dict>
+    <key>signingStyle</key>
+    <string>automatic</string>
+    <key>method</key>
+    <string>app-store</string> <!-- Or "ad-hoc" for testing -->
+    <key>teamID</key>
+    <string>N349VD8AP6</string>
+</dict>
+</plist>

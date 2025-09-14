@@ -1,0 +1,102 @@
+pipeline {
+    agent { label 'macOS' } 
+
+    environment {
+        PATH = "$PATH:/Users/jenkins/.rbenv/shims:/opt/homebrew/bin"
+        LANG = "en_US.UTF-8"
+        AAB_PATH = "build/app/outputs/bundle/release/app-release.aab"
+        IPA_PATH = "$WORKSPACE/build/ios/ipa/pnjapp.ipa"
+        ANDROID_HOME = "/Users/jenkins/Library/Android/sdk"
+        DOCKER_PATH = '/usr/local/bin/docker'
+        
+        APP_STORE_CONNECT_KEY_ID = '345TUDA2NP'
+        APP_STORE_CONNECT_ISSUER_ID = '0f446118-df13-4f36-80cc-e237a3704d0f'
+        APP_STORE_CONNECT_KEY_PATH = credentials('JETDISPATCH_APP_STORE_CONNECT_API_KEY')
+
+    }
+
+    stages {
+        stage('Unlock Keychain') {
+            when { expression { isUnix() } }
+            steps {
+                sh '''
+                security unlock-keychain -p "tech2day" /Users/jenkins/Library/Keychains/login.keychain
+                security set-key-partition-list -S apple-tool:,apple: -s -k "tech2day" /Users/jenkins/Library/Keychains/login.keychain
+                '''
+            }
+        }
+
+
+        stage('Update Dependencies') {
+            steps {
+                sh '/opt/homebrew/bin/flutter pub upgrade'
+            }
+        }
+
+
+        stage('Clean Xcode and iOS Pods') {
+            when { expression { isUnix() } }
+            steps {
+                sh '''
+                xcodebuild clean -workspace ios/Runner.xcworkspace -scheme Runner
+                cd ios
+                pod repo update
+                rm -rf Pods Podfile.lock
+                pod install
+                cd ..
+                '''
+            }
+        }
+
+        stage('Flutter Clean and Get Dependencies') {
+            steps {
+                sh '''
+                /opt/homebrew/bin/flutter clean
+                /opt/homebrew/bin/flutter pub get
+                '''
+            }
+        }
+
+        stage('Build iOS IPA') {
+            when { expression { isUnix() } }
+            steps {
+                sh 'security find-identity -v -p codesigning'
+                sh '/opt/homebrew/bin/flutter build ipa --release --export-options-plist $WORKSPACE/ios/ExportOptions.plist'
+                sh '''
+                mv "$WORKSPACE/build/ios/ipa/Parknjet airport parking app.ipa" "$WORKSPACE/build/ios/ipa/pnjapp.ipa"
+                '''
+            }
+        }
+
+        stage('Distribute IPA to TestFlight') {
+            when { expression { isUnix() } }
+             steps {
+                    sh '''
+                    cp $APP_STORE_CONNECT_KEY_PATH ~/.appstoreconnect/private_keys/
+
+                    xcrun altool --upload-app -f $IPA_PATH \
+                    -t ios \
+                    --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+                    --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
+                    --verbose
+                    '''
+                }
+        }
+    }
+    
+    options {
+        disableConcurrentBuilds()
+    }
+
+    post {
+        always {
+            echo "Pipeline completed"
+        }
+        success {
+            echo "Build and distribution completed successfully."
+        }
+        failure {
+            echo "Build or distribution failed."
+        }
+    }
+}

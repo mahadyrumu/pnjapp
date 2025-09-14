@@ -1,0 +1,2 @@
+/Users/engmilon/sdev/techcliqs/parknjet/pnjapp/android/app/.cxx/RelWithDebInfo/4zr4v705/x86/CMakeFiles/edit_cache.dir
+/Users/engmilon/sdev/techcliqs/parknjet/pnjapp/android/app/.cxx/RelWithDebInfo/4zr4v705/x86/CMakeFiles/rebuild_cache.dir

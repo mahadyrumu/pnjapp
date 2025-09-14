@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<resources> 
+    <string name="default_web_client_id">627415406926-4g2lqacf44etkcdqsj1amamm0duj4shn.apps.googleusercontent.com</string>
+    <string name="app_name">ParknJet</string>
+    <string name="facebook_app_id">965844828506037</string>
+    <string name="fb_login_protocol_scheme">fb965844828506037</string>
+    <string name="facebook_client_token">fb998b58f7e97ada62f26133c0216714</string>
+
+
+
+</resources>
